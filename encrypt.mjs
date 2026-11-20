@@ -1,10 +1,13 @@
 // .env の STATICRYPT_PASSWORD を（ターミナルの環境変数より優先して）使って暗号化する
-import { readFileSync } from 'node:fs';
+// .env が無い環境（GitHub Actions）では環境変数 STATICRYPT_PASSWORD を使う
+import { readFileSync, existsSync } from 'node:fs';
 import { parseEnv } from 'node:util';
 import { spawnSync } from 'node:child_process';
 
-const password = parseEnv(readFileSync('.env', 'utf8')).STATICRYPT_PASSWORD;
-if (!password) throw new Error('.env に STATICRYPT_PASSWORD がありません');
+const password = existsSync('.env')
+  ? parseEnv(readFileSync('.env', 'utf8')).STATICRYPT_PASSWORD
+  : process.env.STATICRYPT_PASSWORD;
+if (!password) throw new Error('STATICRYPT_PASSWORD が .env にも環境変数にもありません');
 
 const args = [
   'node_modules/staticrypt/cli/index.js', '.build/index.html',
